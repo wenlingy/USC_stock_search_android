@@ -1,0 +1,37 @@
+<resources>
+    <string name="app_name">stocksearch</string>
+    <string name="app_title">Stock Market Search</string>
+    <string name="submit_btn">Get Quote</string>
+    <string name="clear_btn">Clear</string>
+    <string name="favorites_text">Favorites</string>
+    <string name="autorefresh_text">AutoRefresh</string>
+    <string name="refresh_btn"></string>
+    <string name="sort_spinner">Sort by</string>
+    <string name="order_spinner">Order</string>
+    <string name="title_activity_display_results">DisplayResultsActivity</string>
+    <string name="action_settings">Settings</string>
+    <string name="section_format">Hello World from section: %1$d</string>
+    <string name="title_activity_stock_results">StockResultsActivity</string>
+
+    <string name="tab_text_1">CURRENT</string>
+    <string name="tab_text_2">HISTORICAL</string>
+    <string name="tab_text_3">NEWS</string>
+
+    <string name="indicator_text">Indicators</string>
+    <string name="change_btn">Change</string>
+
+    <string name="details_text">Stock Details</string>
+    <string name="facebook_app_id">1543541075724613</string>
+
+    <string-array name="indicator_arr">
+        <item>Price</item>
+        <item>SMA</item>
+        <item>EMA</item>
+        <item>STOCH</item>
+        <item>RSI</item>
+        <item>ADX</item>
+        <item>CCI</item>
+        <item>BBANDS</item>
+        <item>MACD</item>
+    </string-array>
+</resources>

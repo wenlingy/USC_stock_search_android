@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script type="text/javascript">
+    function plotPriceChart(price_info) {
+      var data = JSON.parse(price_info);
+      var symbol = data["symbol"];
+      var resp = data["data"];
+      open_stock = new Array();
+      high = new Array();
+      low = new Array();
+      close = new Array();
+      volume = new Array();
+      var date = Object.keys(resp).map(function(t) {
+        return new Date(t);
+      });
+      for(var time in resp) {
+        var content = resp[time];
+        var keys = Object.keys(content);
+        open_stock.push(content[keys[0]]);
+        high.push(content[keys[1]]);
+        low.push(content[keys[2]]);
+        close.push(content[keys[3]]);
+        volume.push(content[keys[4]]);
+      }
+      open_stock = open_stock.map(parseFloat);
+      high = high.map(parseFloat);
+      low = low.map(parseFloat);
+      close = close.map(parseFloat);
+      volume = volume.map(parseFloat);
+      var last_refresh = Object.keys(resp)[131];
+
+      //modify the table content
+      var prev_close = close[close.length-2];
+      //today's info
+      var cur_open = open_stock[open_stock.length-1];
+      var cur_close = close[close.length-1];
+      var cur_low = low[low.length-1];
+      var cur_high = high[high.length-1];
+      var cur_vol = volume[volume.length-1];
+      var change = cur_close - prev_close;
+      var change_percent = 100 * change/prev_close;
+
+      //plot the charts
+      var priceobj = Highcharts.chart('container', {
+        chart: {
+            zoomType: 'x'
+        },
+        title: {
+          text: symbol + ' Stock Price and Volume'
+        },
+        subtitle: {
+          text: '<a href="https://www.alphavantage.co/" target="_blank">Source: Alpha Vantage</a>',
+          style: {
+            color: '#0000FF'
+          }
+        },
+        xAxis: {
+          categories : date.map(function (time) {
+            return Highcharts.dateFormat('%m/%d', time);
+          }),
+          labels: {
+            rotation: -45
+          },
+          tickInterval: 5
+        },
+        yAxis: [{
+          title: {
+            text: 'Stock Price'
+          },
+          allowDecimals: false,
+          min: Math.min.apply(null, close) * 0.9,
+          max: Math.max.apply(null, close)
+        },{
+          title: {
+            text: 'Volume'
+          },
+          labels: {
+            formatter: function () {
+              return this.value / 1000000 + 'M';
+            }
+          },
+          max: Math.max.apply(null, volume) * 7,
+          opposite: true
+        }],
+        tooltip: {
+          valueDecimals: 2
+        },
+        plotOptions: {
+          area: {
+            marker: {
+              enabled: false,
+              symbol: 'circle',
+              radius: 2,
+              states: {
+                hover: {
+                  enabled: false
+                }
+              }
+            }
+          }
+        },
+        series: [{
+          color: '#DB3923',
+          name: symbol,
+          type: 'area',
+          fillOpacity: 0.5,
+          lineWidth: 1,
+          yAxis: 0,
+          data: close
+        }, {
+          color: '#FFFFFF',
+          type: 'column',
+          name: symbol + " Volume",
+          yAxis: 1,
+          data: volume
+        }]
+      });
+      return priceobj.options;
+    }
+
+    function plotApiChart(api_info) {
+      var data = JSON.parse(api_info);
+      var symbol = data["symbol"];
+      var indicator = data["indicator"];
+      var title = data["title"];
+      var resp = data["data"];
+      //, indicator, title
+      //parse api data
+      var time = Object.keys(resp);
+      var date = Object.keys(resp).map(function(t) {
+        return new Date(t);
+      });
+      var legend = Object.keys(resp[time[0]]);
+      var api_data = new Array(legend.length);
+      for(var i = 0; i < legend.length; i++) {
+        api_data[legend[i]] = new Array(time.length);
+      }
+      for (var i = 0; i < time.length; i++) {
+        for(var j = 0; j < legend.length; j++) {
+          api_data[legend[j]][i] = parseFloat(resp[time[i]][legend[j]]);
+        }
+      }
+      var api_key = Object.keys(api_data);
+      //plot api charts
+      var indicatorobj = Highcharts.chart('container',{
+        chart: {
+            zoomType: 'x'
+        },
+        title: {
+          text: title
+        },
+
+        subtitle: {
+          text: '<a href="https://www.alphavantage.co/">Source: Alpha Vantage</a>',
+          style: {
+            color: '#0000FF'
+          }
+        },
+
+        xAxis: {
+          categories : date.map(function (time) {
+            return Highcharts.dateFormat('%m/%d', time);
+          }),
+          labels: {
+            rotation: -45
+          },
+          tickInterval: 5
+        },
+
+        yAxis: {
+          title: {
+            text: indicator
+          }
+        },
+
+        plotOptions: {
+          spline: {
+            lineWidth: 1,
+            states: {
+                hover: {
+                    lineWidth: 3
+                }
+            },
+            marker: {
+                allowPointSelect: true,
+                enabled: true,
+                radius: 2
+            }
+          }
+        },
+        series: Object.keys(api_data).map(function (key) {
+          if(api_key.length == 1) {
+            return {
+              //color: '#DC143C',
+              name: symbol,
+              data: api_data[key],
+            }
+          }
+          else {
+            return {
+              name: symbol + ' ' + key,
+              data: api_data[key],
+            }
+          }
+        })
+      });
+      return indicatorobj.options;
+    }
+
+    function plotHistoricalChart(historical_info) {
+      var data = JSON.parse(historical_info);
+      var symbol = data["symbol"];
+      var resp = data["data"];
+
+      var alldate = Object.keys(resp).map(function(t) {
+        return new Date(t).getTime();
+      });
+      var allclose = new Array();
+      for(var time in resp) {
+        var content = resp[time];
+        var keys = Object.keys(content);
+        allclose.push(content[keys[3]]);
+      }
+      allclose = allclose.map(parseFloat);
+      //combine allclose and alldate to be one array
+      var historical_data = new Array();
+      for(var i=0; i<alldate.length; i++) {
+        historical_data.push([alldate[i],allclose[i]]);
+      }
+      Highcharts.stockChart('container', {
+          rangeSelector: {
+            buttons: [{
+                type: 'week',
+                count: 1,
+                text: '1w'
+            },{
+                type: 'month',
+                count: 1,
+                text: '1m'
+            }, {
+                type: 'month',
+                count: 3,
+                text: '3m'
+            }, {
+                type: 'month',
+                count: 6,
+                text: '6m'
+            }, {
+                type: 'ytd',
+                text: 'YTD'
+            }, {
+                type: 'year',
+                count: 1,
+                text: '1y'
+            }, {
+                type: 'all',
+                text: 'All'
+            }],
+              selected: 0
+          },
+          title: {
+              text: symbol+' Stock Price'
+          },
+          subtitle: {
+            text: '<a href="https://www.alphavantage.co/">Source: Alpha Vantage</a>',
+            style: {
+              color: '#0000FF'
+            }
+          },
+          yAxis: {
+            title: {
+              text: 'Stock Value'
+            }
+          },
+          tooltip: {
+              split: false,
+              distance: 30,
+              padding: 5
+          },
+          series: [{
+              name: symbol,
+              data: historical_data,
+              type: 'area',
+              threshold: null,
+              tooltip: {
+                  valueDecimals: 2,
+              },
+              fillColor: '#97C1ED'
+          }]
+      });
+    }
+
+  </script>
+</head>
+<body>
+
+  <script src="https://code.highcharts.com/stock/highstock.js"></script>
+  <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+  <div id="container"></div>
+</body>
+</html>
